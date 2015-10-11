@@ -121,7 +121,9 @@ decode_type_t;
 //------------------------------------------------------------------------------
 // Set DEBUG to 1 for lots of lovely debug output
 //
+#ifndef DEBUG
 #define DEBUG  0
+#endif
 
 //------------------------------------------------------------------------------
 // Debug directives
@@ -167,8 +169,13 @@ class decode_results
 class IRrecv
 {
 	public:
+#ifdef ATMEL_STUDIO
+		IRrecv (volatile uint8_t *recvport ,int recvpin);
+		IRrecv (volatile uint8_t *recvport, int recvpin,volatile uint8_t *blinkport, int blinkpin);
+#else
 		IRrecv (int recvpin) ;
 		IRrecv (int recvpin, int blinkpin);
+#endif
 
 		void  blink13    (int blinkflag) ;
 		int   decode     (decode_results *results) ;
@@ -328,5 +335,19 @@ class IRsend
 			void  sendPronto     (char* code,  bool repeat,  bool fallback) ;
 #		endif
 } ;
+
+#ifdef ATMEL_STUDIO
+#define INPUT	0
+#define OUTPUT	1
+#define LOW		0
+#define HIGH	1
+
+#define delay(x) _delay_ms(x)
+
+void IRdigitalWrite(volatile uint8_t *port, uint8_t portpin, uint8_t set);
+void IRpinMode(volatile uint8_t *port, uint8_t portpin, uint8_t set);
+uint8_t IRdigitalRead(volatile uint8_t *port, uint8_t portpin);
+#endif
+
 
 #endif

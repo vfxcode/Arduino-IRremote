@@ -1,6 +1,9 @@
 #include "IRremote.h"
 #include "IRremoteInt.h"
 
+#ifdef ATMEL_STUDIO
+#pragma message "IRsend not implemented in Atmel Studio"
+#else
 //+=============================================================================
 void  IRsend::sendRaw (unsigned int buf[],  unsigned int len,  unsigned int hz)
 {
@@ -85,3 +88,4 @@ void IRsend::custom_delay_usec(unsigned long uSecs) {
   //}
 }
 
+#endif

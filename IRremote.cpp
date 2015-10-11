@@ -109,8 +109,11 @@ ISR (TIMER_INTR_NAME)
 
 	// Read if IR Receiver -> SPACE [xmt LED off] or a MARK [xmt LED on]
 	// digitalRead() is very slow. Optimisation is possible, but makes the code unportable
+#ifdef ATMEL_STUDIO
+	uint8_t  irdata = IRdigitalRead(irparams.recvport, irparams.recvpin);
+#else
 	uint8_t  irdata = (uint8_t)digitalRead(irparams.recvpin);
-
+#endif
 	irparams.timer++;  // One more 50uS tick
 	if (irparams.rawlen >= RAWBUF)  irparams.rcvstate = STATE_OVERFLOW ;  // Buffer overflow
 
@@ -167,10 +170,17 @@ ISR (TIMER_INTR_NAME)
 
 	// If requested, flash LED while receiving IR data
 	if (irparams.blinkflag) {
+
 		if (irdata == MARK)
+#ifdef ATMEL_STUDIO
+			IRdigitalWrite(irparams.blinkport, irparams.blinkpin, HIGH); // Turn user defined pin LED on
+		else
+			IRdigitalWrite(irparams.blinkport, irparams.blinkpin, LOW); // Turn user defined pin LED on
+#else
 			if (irparams.blinkpin) digitalWrite(irparams.blinkpin, HIGH); // Turn user defined pin LED on
 				else BLINKLED_ON() ;   // if no user defined LED pin, turn default LED pin for the hardware on
 		else if (irparams.blinkpin) digitalWrite(irparams.blinkpin, LOW); // Turn user defined pin LED on
 				else BLINKLED_OFF() ;   // if no user defined LED pin, turn default LED pin for the hardware on
+#endif
 	}
 }

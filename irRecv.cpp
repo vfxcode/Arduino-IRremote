@@ -91,6 +91,27 @@ int  IRrecv::decode (decode_results *results)
 }
 
 //+=============================================================================
+#ifdef ATMEL_STUDIO
+IRrecv::IRrecv (volatile uint8_t *recvport ,int recvpin)
+{
+	irparams.recvpin = recvpin;
+	irparams.recvport = recvport;
+	irparams.blinkflag = 0;
+}
+
+IRrecv::IRrecv (volatile uint8_t *recvport, int recvpin,volatile uint8_t *blinkport, int blinkpin)
+{
+	irparams.recvpin = recvpin;
+	irparams.recvport = recvport;
+	irparams.blinkpin = blinkpin;
+	irparams.blinkport = blinkport;
+	IRpinMode(blinkport,blinkpin, OUTPUT);
+	irparams.blinkflag = 0;
+}
+
+
+
+#else
 IRrecv::IRrecv (int recvpin)
 {
 	irparams.recvpin = recvpin;
@@ -104,7 +125,7 @@ IRrecv::IRrecv (int recvpin, int blinkpin)
 	pinMode(blinkpin, OUTPUT);
 	irparams.blinkflag = 0;
 }
-
+#endif
 
 
 //+=============================================================================
@@ -131,7 +152,11 @@ void  IRrecv::enableIRIn ( )
 	irparams.rawlen = 0;
 
 	// Set pin modes
+#ifdef ATMEL_STUDIO
+	IRpinMode(irparams.recvport,irparams.recvpin, INPUT);
+#else
 	pinMode(irparams.recvpin, INPUT);
+#endif
 }
 
 //+=============================================================================
@@ -139,8 +164,13 @@ void  IRrecv::enableIRIn ( )
 //
 void  IRrecv::blink13 (int blinkflag)
 {
+#ifdef ATMEL_STUDIO
+	irparams.blinkflag = 0;
+#pragma message "BLINK13 NOT IMPLIMENTED IN ATMEL STUDIO"
+#else
 	irparams.blinkflag = blinkflag;
 	if (blinkflag)  pinMode(BLINKLED, OUTPUT) ;
+#endif
 }
 
 //+=============================================================================
@@ -190,7 +220,7 @@ int  IRrecv::compare (unsigned int oldval,  unsigned int newval)
 // This isn't a "real" decoding, just an arbitrary value.
 //
 #define FNV_PRIME_32 16777619
-#define FNV_BASIS_32 2166136261
+#define FNV_BASIS_32 2166136261LL
 
 long  IRrecv::decodeHash (decode_results *results)
 {

@@ -23,9 +23,10 @@
 #if defined(ARDUINO) && (ARDUINO >= 100)
 #	include <Arduino.h>
 #else
-#	if !defined(IRPRONTO)
-#		include <WProgram.h>
-#	endif
+#	define ATMEL_STUDIO
+#	include <avr/io.h>
+#	include <avr/interrupt.h>
+#	include <util/delay.h>
 #endif
 
 //------------------------------------------------------------------------------
@@ -46,7 +47,13 @@ typedef
 	struct {
 		// The fields are ordered to reduce memory over caused by struct-padding
 		uint8_t       rcvstate;        // State Machine state
+#ifdef ATMEL_STUDIO
+		volatile uint8_t *recvport;
+#endif
 		uint8_t       recvpin;         // Pin connected to IR data from detector
+#ifdef ATMEL_STUDIO
+		volatile uint8_t *blinkport;
+#endif
 		uint8_t       blinkpin;
 		uint8_t       blinkflag;       // true -> enable blinking of pin on IR processing
 		uint8_t       rawlen;          // counter of entries in rawbuf
@@ -72,6 +79,7 @@ EXTERN  volatile irparams_t  irparams;
 // Defines for blinking the LED
 //
 
+
 #if defined(CORE_LED0_PIN)
 #	define BLINKLED        CORE_LED0_PIN
 #	define BLINKLED_ON()   (digitalWrite(CORE_LED0_PIN, HIGH))
@@ -87,10 +95,15 @@ EXTERN  volatile irparams_t  irparams;
 #	define BLINKLED_ON()   (PORTD |= B00000001)
 #	define BLINKLED_OFF()  (PORTD &= B11111110)
 
-#else
+#elif !defined(ATMEL_STUDIO)
 #	define BLINKLED        13
-	#define BLINKLED_ON()  (PORTB |= B00100000)
+#	define BLINKLED_ON()   (PORTB |= B00100000)
 #	define BLINKLED_OFF()  (PORTB &= B11011111)
+
+#else
+#	define BLINKLED
+#	define BLINKLED_ON()
+#	define BLINKLED_OFF()
 #endif
 
 //------------------------------------------------------------------------------
